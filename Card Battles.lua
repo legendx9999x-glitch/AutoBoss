@@ -1069,9 +1069,14 @@ TowerCheckButton.Text = "☑ INFINITY TOWER"
 TowerCheckButton.BackgroundColor3 = Color3.fromRGB(72, 158, 225)
 
 -- Infinity Tower uses its own party/card-set selection, independent of each boss.
-local TowerPartyButton = MakeCheckButton(ConfigScroll, "", 1, function()
+-- Forward-declare the button so the click callback updates this local button,
+-- rather than accidentally resolving a global TowerPartyButton.
+local TowerPartyButton
+TowerPartyButton = MakeCheckButton(ConfigScroll, "", 1, function()
     SelectedTowerParty = (SelectedTowerParty % 4) + 1
-    TowerPartyButton.Text = "   ◈ TOWER PARTY / CARD SET: " .. tostring(SelectedTowerParty) .. "   •   TAP TO CHANGE"
+    if TowerPartyButton then
+        TowerPartyButton.Text = "   ◈ TOWER PARTY / CARD SET: " .. tostring(SelectedTowerParty) .. "   •   TAP TO CHANGE"
+    end
 end, 27)
 TowerPartyButton.Text = "   ◈ TOWER PARTY / CARD SET: 1   •   TAP TO CHANGE"
 TowerPartyButton.BackgroundColor3 = Color3.fromRGB(190, 225, 255)
