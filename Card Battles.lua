@@ -369,13 +369,13 @@ local DIFFICULTIES = {
 
 local BOSS_DIFFICULTIES = {
 
-    thriller_king = {"Normal", "Hard", "Extreme", "Nightmare" },
+    thriller_king = {"Hard", "Extreme", "Nightmare"},
 
-    red_dog = {"Normal", "Hard", "Extreme", "Nightmare" },
+    red_dog = {"Nightmare"},
 
-    dragon_emperor = {"Normal", "Hard", "Extreme", "Nightmare" },
+    dragon_emperor = {"Hard", "Extreme", "Nightmare"},
 
-    curse_tyrant = {"Normal", "Hard", "Extreme", "Nightmare" },
+    curse_tyrant = {"Hard", "Extreme", "Nightmare"},
 
     kikoru_shinomiya = {"Normal", "Hard", "Extreme", "Nightmare" },
 
@@ -385,7 +385,7 @@ local BOSS_DIFFICULTIES = {
 
     gen_narumi = {"Normal", "Hard", "Extreme", "Nightmare" },
 
-    crimson_phantom = {"Normal", "Hard", "Extreme", "Nightmare" }
+    crimson_phantom = {"Normal", "Hard", "Extreme", "Nightmare"}
 
 }
 
@@ -876,6 +876,7 @@ local BossNames = {
 
 local SelectedStages = {}
 local SelectedParty = {} -- party/deck slot per boss (1-4)
+local SelectedTowerParty = 1 -- party/deck slot used for Infinity Tower (1-4)
 local SelectedTower = true
 
 for _, bossInfo in ipairs(BossNames) do
@@ -1066,6 +1067,14 @@ TowerCheckButton = MakeCheckButton(ConfigScroll, "", 1, function()
 end, 32)
 TowerCheckButton.Text = "☑ INFINITY TOWER"
 TowerCheckButton.BackgroundColor3 = Color3.fromRGB(72, 158, 225)
+
+-- Infinity Tower uses its own party/card-set selection, independent of each boss.
+local TowerPartyButton = MakeCheckButton(ConfigScroll, "", 1, function()
+    SelectedTowerParty = (SelectedTowerParty % 4) + 1
+    TowerPartyButton.Text = "   ◈ TOWER PARTY / CARD SET: " .. tostring(SelectedTowerParty) .. "   •   TAP TO CHANGE"
+end, 27)
+TowerPartyButton.Text = "   ◈ TOWER PARTY / CARD SET: 1   •   TAP TO CHANGE"
+TowerPartyButton.BackgroundColor3 = Color3.fromRGB(190, 225, 255)
 
 for _, bossInfo in ipairs(BossNames) do
     local header = MakeCheckButton(ConfigScroll, "", 1, function()
@@ -2090,6 +2099,23 @@ local function RunInfinityTower()
     if not TeleportToTower() then
         return false
     end
+
+    if not AutoEnabled then
+        return false
+    end
+
+    -- Switch to the card set chosen specifically for Infinity Tower.
+    SetStatus("SWITCHING TOWER CARD SET")
+    SetCurrent("Infinity Tower • Party / Card Set " .. tostring(SelectedTowerParty))
+    local swapOk, swapErr = pcall(function()
+        SwapParty:FireServer(SelectedTowerParty)
+    end)
+    if not swapOk then
+        warn("Could not switch party for Infinity Tower:", swapErr)
+        SetStatus("TOWER PARTY SWITCH FAILED")
+        return false
+    end
+    task.wait(0.8)
 
     if not AutoEnabled then
         return false
